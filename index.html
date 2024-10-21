@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Motion Metrics</title>
+    <link rel="icon" type="image/x-icon" href="/media/favicon.ico">
     <link rel="stylesheet" href="style.css">
     <script src="interaction.js" defer></script>
     <script src="https://livejs.com/live.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
 </head>
 <body>
     <header>
@@ -28,7 +30,7 @@
             <div class="left-column">
                 <h2>Hello, <span class="highlight">User</span>!</h2>
                 <div class="last-workout">
-                    <p>It has been <span id="days-since-workout">X</span> days since your last workout.</p>
+                    <p>It has been <span id="days-since-workout">X</span> day(s) since your last workout.</p>
                 </div>
 
                 <h2>Badges:</h2>
@@ -102,31 +104,39 @@
             <h2>Settings</h2>
             <div class="settings-options">
                 <strong>Appearance</strong>
-                <div class="toggle-option"></div>
-                    <label for="dark-mode">Dark Mode:</label>
-                    <input type="checkbox" id="email-notifications" checked>
+                <div class="toggle-option" style="margin-bottom: 6px;">
+                    <label for="dark-mode-toggle">Dark Mode:</label>
+                    <input type="checkbox" id="dark-mode-toggle" checked>
                 </div>
                 <strong>Privacy</strong>
                 <div class="toggle-option">
-                    <label for="email-notifications">Email Notifications:</label>
-                    <input type="checkbox" id="email-notifications">
+                    <label for="email-notifications-toggle">Email Notifications:</label>
+                    <input type="checkbox" id="email-notifications-toggle">
                 </div>
                 <div class="toggle-option">
-                    <label for="activity-reminders">Activity Reminders:</label>
-                    <input type="checkbox" id="activity-reminders">
+                    <label for="activity-reminders-toggle">Activity Reminders:</label>
+                    <input type="checkbox" id="activity-reminders-toggle">
                 </div>
             </div>
-            <button class="contact-us-button">Contact Us</button><br>
+            <a href="mailto:contact@motionmetrics.com"><button class="contact-us-button">Contact Us</button></a><br>
             <button class="log-out-button">Log Out</button>
         </section>
 
         <section id="profile" class="section page">
             <h2>Profile</h2>
-            <p>Name: <span id="profile-name">User</span></p>
-            <p>Email: <span id="profile-email">user@motionmetrics.com</span></p>
+            <p>Name: <span id="profile-name">Error</span></p>
+            <p>Email: <span id="profile-email">error@site.com</span></p>
         </section>
-    </main>
 
+        <section id="login" class="section page">
+            <h2>Login</h2>
+            <form id="login-form">
+                <input type="text" id="username" placeholder="Username" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+            <p style="padding-top: 10px;">Credentials are "example:password123" for testing!</p>
+        </section>
     </main>
 
     <dialog id="log-new-popup" class="popup">

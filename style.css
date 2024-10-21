@@ -231,12 +231,8 @@ h2 {
     display: inline-block;
     text-decoration: none;
     margin-top: 6px;
-    color: #333;
     transition: var(--transition);
-}
-
-.leaderboard-link:hover {
-    color: var(--secondary-color);
+    color: #333;
 }
 
 /* Log Page Styles */
@@ -282,6 +278,7 @@ h2 {
     border-radius: var(--border-radius);
     padding: 10px 15px;
     margin-bottom: 10px;
+    color: var(--primary-color);
 }
 
 /* Settings Page Styles */
@@ -404,7 +401,120 @@ dialog > form > button {
     font-weight: 600;
 }
 
+/* Dark mode styles */
+body.dark-mode {
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+}
 
+body.dark-mode .leaderboard-link {
+    color: #f0f0f0;
+}
+
+body.dark-mode .section {
+    background-color: #2a2a2a;
+    color: #f0f0f0;
+}
+
+body.dark-mode nav a {
+    background-color: #2a2a2a;
+    color: #f0f0f0;
+}
+
+body.dark-mode nav a:hover,
+body.dark-mode nav a.active {
+    background-color: #3a3a3a;
+    color: var(--primary-color);
+}
+
+body.dark-mode .workout-entry,
+body.dark-mode .badges,
+body.dark-mode .goals,
+body.dark-mode .weekly-challenge,
+body.dark-mode .weekly-top-users,
+body.dark-mode .leaderboard-list li {
+    background-color: #3a3a3a;
+}
+
+/* Login page styles */
+#login.section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#login h2 {
+    margin-bottom: 20px;
+}
+
+#login-form {
+    width: 100%;
+    max-width: 300px;
+}
+
+#login-form input {
+    width: 100%;
+    margin-bottom: 0px;
+}
+
+#login-form button {
+    width: 80px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    font-weight: bold;
+    background-color: var(--primary-color);
+    color: #f0f0f0;
+}
+
+#login-form button:hover {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+}
+
+/* Dark mode adjustments for login */
+body.dark-mode #login.section {
+    background-color: #333;
+    color: #f0f0f0;
+}
+
+/* Notification styles */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.notification.show {
+    opacity: 1;
+}
+
+/* Dark mode adjustments for login and notification */
+body.dark-mode #login-screen form {
+    background-color: #2a2a2a;
+    color: #f0f0f0;
+}
+
+body.dark-mode .notification {
+    background-color: #3a3a3a;
+}
 
 /* Responsive Styles */
 @media (max-width: 600px) {

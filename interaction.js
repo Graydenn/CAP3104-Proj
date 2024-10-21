@@ -16,6 +16,18 @@ document.addEventListener('DOMContentLoaded', () => {
             activeLink.classList.add('active');
         }
 
+        // Adjust header for login page
+        if (pageId === 'login') {
+            document.querySelector('header>nav').style.display = 'none';
+        } else {
+            document.querySelector('header>nav').style.display = 'flex';
+            navLinks.forEach(link => link.classList.remove('active'));
+            const activeLink = document.querySelector(`nav a[href="#${pageId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+
         // Attach event listeners for the new page
         if (pageId === 'home') {
             attachHomeEventListeners();
@@ -165,13 +177,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function updateDaysSinceWorkout(lastWorkoutDate) {
-        const today = new Date();
-        const diffTime = Math.abs(today - lastWorkoutDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    function updateDaysSinceWorkout(lastWorkoutDateString) {
+        const today = dayjs(); // Get today's date using Day.js
+        const lastWorkout = dayjs(lastWorkoutDateString); // Parse the input date string
+      
+        const diffDays = today.diff(lastWorkout, 'day'); // Calculate difference in days
+      
         const daysSinceWorkout = document.getElementById('days-since-workout');
         if (daysSinceWorkout) {
-            daysSinceWorkout.textContent = diffDays;
+          daysSinceWorkout.textContent = ((Math.max(0, diffDays))-1);
         }
     }
 
@@ -220,6 +234,93 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateLeaderboard() {
         // Placeholder function for populating leaderboard
         console.log('Populating leaderboard...');
+    }
+
+    // Update profile information
+    const profileName = document.getElementById('profile-name');
+    const profileEmail = document.getElementById('profile-email');
+    if (profileName && profileEmail) {
+        profileName.textContent = 'Example';
+        profileEmail.textContent = 'example@site.com';
+    }
+
+    // Dark mode implementation
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const body = document.body;
+    
+    function setDarkMode(isDark) {
+        if (isDark) {
+            body.classList.add('dark-mode');
+        } else {
+            body.classList.remove('dark-mode');
+        }
+        localStorage.setItem('darkMode', isDark);
+    }
+
+    // Set initial dark mode state (on by default)
+    setDarkMode(localStorage.getItem('darkMode') !== 'false');
+    
+    if (darkModeToggle) {
+        darkModeToggle.checked = body.classList.contains('dark-mode');
+        darkModeToggle.addEventListener('change', () => {
+            setDarkMode(darkModeToggle.checked);
+        });
+    }
+
+    // Logout functionality
+    const logoutButton = document.querySelector('.log-out-button');
+    
+    if (logoutButton) {
+        logoutButton.addEventListener('click', () => {
+            showPage('login');
+        });
+    }
+
+    document.body.addEventListener('submit', (event) => {
+        if (event.target.id === 'login-form') {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            if (username === 'example' && password === 'password123') {
+                showPage('home');
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+    });
+
+    // Privacy checkboxes
+    const emailNotificationsToggle = document.getElementById('email-notifications-toggle');
+    const activityRemindersToggle = document.getElementById('activity-reminders-toggle');
+
+    function showNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        setTimeout(() => {
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }, 100);
+    }
+
+    function handlePrivacyToggle(toggle, settingName) {
+        toggle.addEventListener('change', () => {
+            const email = document.getElementById('profile-email').textContent;
+            const status = toggle.checked ? 'enabled' : 'disabled';
+            showNotification(`${settingName} have been ${status} for ${email}.`);
+        });
+    }
+
+    if (emailNotificationsToggle) {
+        handlePrivacyToggle(emailNotificationsToggle, 'Email notifications');
+    }
+
+    if (activityRemindersToggle) {
+        handlePrivacyToggle(activityRemindersToggle, 'Activity reminders');
     }
 
     // Initial page load
