@@ -257,9 +257,10 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('darkMode', isDark);
     }
 
-    // Set initial dark mode state (on by default)
-    setDarkMode(localStorage.getItem('darkMode') !== 'false');
-    
+    // Set initial dark mode state (off by default)
+    const savedDarkMode = localStorage.getItem('darkMode');
+    setDarkMode(savedDarkMode === 'true');
+   
     if (darkModeToggle) {
         darkModeToggle.checked = body.classList.contains('dark-mode');
         darkModeToggle.addEventListener('change', () => {
