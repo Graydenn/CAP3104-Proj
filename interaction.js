@@ -2,7 +2,66 @@ document.addEventListener('DOMContentLoaded', () => {
     // Page Navigation
     const navLinks = document.querySelectorAll('nav a, .leaderboard-link');
     const pages = document.querySelectorAll('.page');
+
     
+    class user {
+
+        constructor(name, weekly, monthly, allTime)
+        {
+            this.name = name;
+            this.weekly= weekly;
+            this.monthly= monthly;
+            this.allTime= allTime;
+        }
+        get getName(){
+            return this.name;
+        }
+        get getWeekly()
+        {
+            return this.weekly;
+        }
+        get getMonthly()
+        {
+            return this.monthly;
+        }
+        get getAllTime(){
+            return this.allTime;
+        }
+        set setName(newName){
+             this.name= newName;
+        }
+        set setWeekly(newWeekly)
+        {
+            this.weekly= newWeekly;
+        }
+        set setMonthly(newMonthly)
+        {
+            this.monthly= newMonthly;
+        }
+        set setAllTime(newAllTime){
+            this.allTime= newAllTime;
+        }
+        workoutLogged(time){
+            let total= parseInt(this.weekly, 10)+parseInt(time, 10);
+            this.weekly= total;
+            this.monthly= total;
+            this.allTime= total;
+        }
+      }
+
+    const currUser= new user("Example", 0,0,0);
+    const userA= new user("Sarah C", 45, 135, 5945);
+    const userB= new user("Will G.", 20, 60, 2640);
+    const userC= new user("Alan W.", 15, 66, 1970)
+    const userD= new user("Alex C.", 25, 74, 3256);
+    const userE= new user("Paula P.", 10, 35, 1435);
+    const userF= new user("Brad A.", 90, 270, 10800);
+    const userG= new user("Rhys S.", 17, 51, 2260);
+    const userH= new user("Jesse F.", 77, 231, 10164);
+    const userI= new user("Rose M.", 67, 201, 8890);
+    const userJ= new user("Cecil P.", 5, 15, 2200)
+    let users= [userA, userB, userC, userD, userE, userF, userG, userH, userI, userJ, currUser];
+
     function showPage(pageId) {
         pages.forEach(page => page.style.display = 'none');
         const activePage = document.getElementById(pageId);
@@ -31,10 +90,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Attach event listeners for the new page
         if (pageId === 'home') {
             attachHomeEventListeners();
+            homePopulateLeaderboard();
         } else if (pageId === 'log') {
             attachLogEventListeners();
         } else if (pageId === 'leaderboard') {
             populateLeaderboard();
+            attachLeaderboardEventListener();
         }
     }
 
@@ -67,6 +128,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const duration = document.getElementById('log-duration').value;
 
             addWorkoutEntry(date, activity, duration);
+            currUser.workoutLogged(duration);
+            badgeCheck(users);
             logNewPopup.close();
             logNewForm.reset();
             updateDaysSinceWorkout(new Date(date));
@@ -109,6 +172,40 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteWorkoutEntry(workoutId);
             editWorkoutPopup.close();
         });
+    }
+
+    function badgeCheck(array)
+    {
+        var res = array.sort((a, b) => b.getWeekly-a.getWeekly);
+        for( i=0; i<10; i++){
+
+            if(users[i].getName=="Example")
+            {
+                console.log(" Congrats!");
+                document.getElementById("badge1").classList.remove('badge-desat');
+                document.getElementById("badge1").classList.add('badge');
+            }
+        }
+        var res = array.sort((a, b) => b.getMonthly-a.getMonthly);
+        for( i=0; i<10; i++){
+
+            if(users[i].getName=="Example")
+            {
+                console.log(" Congrats!");
+                document.getElementById("badge2").classList.remove('badge-desat');
+                document.getElementById("badge2").classList.add('badge');
+            }
+        }
+        var res = array.sort((a, b) => b.getAllTime-a.getAllTime);
+        for( i=0; i<10; i++){
+
+            if(users[i].getName=="Example")
+            {
+                console.log(" Congrats!");
+                document.getElementById("badge3").classList.remove('badge-desat');
+                document.getElementById("badge3").classList.add('badge');
+            }
+        }
     }
 
     // Helper Functions
@@ -231,10 +328,87 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function attachLeaderboardEventListener()
+    {
+        const periodDropdown = document.querySelector('#leaderboard-period');
+        if (periodDropdown) {
+            periodDropdown.addEventListener('change', (event) => {
+                populateLeaderboard();
+            });
+        }
+    }
+
+    function homePopulateLeaderboard()
+    {
+
+        var res = users.sort((a, b) => b.getWeekly-a.getWeekly);
+
+        let list = document.getElementById("top-users-list");
+        for (i = 0; i < 5; ++i) {
+            let li = document.createElement('li');
+            li.innerText = users[i].getName;
+            list.appendChild(li);
+        }
+    }
     function populateLeaderboard() {
         // Placeholder function for populating leaderboard
         console.log('Populating leaderboard...');
+
+
+        period =  document.querySelector('#leaderboard-period');
+        dropdown = period.options[period.selectedIndex].value;
+        const lbTable = document.createElement("table");
+        lbTable.innerHTML = "<thead><th>User</th><th>Workout Duration</th></thead>";
+        const target = document.getElementById('leaderboard-list');
+        target.innerHTML = "";
+        if(dropdown==="weekly")
+        {
+            var res = users.sort((a, b) => b.getWeekly-a.getWeekly);
+            for( i=0; i<10; i++){
+                const newRow = document.createElement("tr");
+                const tdName = document.createElement("td");
+                const tdTime = document.createElement("td");
+                tdName.textContent = users[i].getName;
+                tdTime.textContent = users[i].getWeekly;    
+                newRow.appendChild(tdName);
+                newRow.appendChild(tdTime);
+                lbTable.appendChild(newRow);
+            }
+        }
+        else if(dropdown==="monthly")
+        {
+            var res = users.sort((a, b) => b.getMonthly-a.getMonthly);
+            for(i=0; i<10; i++){
+                const newRow = document.createElement("tr");
+                const tdName = document.createElement("td");
+                const tdTime = document.createElement("td");
+                tdName.textContent = users[i].getName;
+                tdTime.textContent = users[i].getMonthly;    
+                newRow.appendChild(tdName);
+                newRow.appendChild(tdTime);
+                lbTable.appendChild(newRow);
+            }
+        }
+        else if(dropdown==="all-time")
+        {
+            var res = users.sort((a, b) => b.getAllTime-a.getAllTime);
+            for(i=0; i<10; i++){
+                const newRow = document.createElement("tr");
+                const tdName = document.createElement("td");
+                const tdTime = document.createElement("td");
+                tdName.textContent = users[i].getName;
+                tdTime.textContent = users[i].getAllTime;    
+                newRow.appendChild(tdName);
+                newRow.appendChild(tdTime);
+                lbTable.appendChild(newRow);
+            }
+        }
+
+        target.appendChild(lbTable);
+
+
     }
+
 
     // Update profile information
     const profileName = document.getElementById('profile-name');

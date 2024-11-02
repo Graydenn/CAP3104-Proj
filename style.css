@@ -516,6 +516,19 @@ body.dark-mode .notification {
     background-color: #3a3a3a;
 }
 
+table, th, td {
+    border: 1px solid #006EFF;
+    text-align: center;
+  }
+th{
+    background-color: #b2d5fd;
+    height: 70px;
+}
+table{
+    width: 100%;
+}
+
+
 /* Responsive Styles */
 @media (max-width: 600px) {
     header {
