@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Motion Metrics - Track your fitness journey">
     <title>Motion Metrics</title>
-    <link rel="icon" type="image/x-icon" href="/media/favicon.ico">
     <link rel="stylesheet" href="style.css">
-    <script src="interaction.js" defer></script>
-    <script src="https://livejs.com/live.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.10.7/dayjs.min.js"></script>
 </head>
 <body>
     <header>
@@ -16,28 +14,30 @@
             <img src="/media/motion.svg" alt="Motion Metrics Logo" class="logo">
         </div>
         <nav>
-            <a href="#home" data-page="home">Home</a>
-            <a href="#log" data-page="log">Log</a>
-            <a href="#leaderboard" data-page="leaderboard">Leaderboard</a>
-            <span class="spacer"></span>
-            <a href="#settings" class="settings-icon" data-page="settings">⚙️</a>
+            <a href="#home" class="active">Home</a>
+            <a href="#log">Log</a>
+            <a href="#leaderboard">Leaderboard</a>
+            <div class="spacer"></div>
+            <a href="#settings" class="settings-icon">⚙️</a>
             <a href="#profile" id="profile-popup-trigger" class="profile-icon">👤</a>
         </nav>
     </header>
 
-    <main id="main-content">
+    <main id="main-content" role="main">
+        <!-- Home Page -->
         <section id="home" class="section page">
             <div class="left-column">
-                <h2>Hello, <span class="highlight">User</span>!</h2>
+                <h2>Hello, <span id="user-greeting" class="highlight"></span>!</h2>
+                
                 <div class="last-workout">
-                    <p>It has been <span id="days-since-workout">X</span> day(s) since your last workout.</p>
+                    <p>It has been <span id="days-since-workout">0</span> day(s) since your last workout.</p>
                 </div>
 
                 <h2>Badges:</h2>
                 <div class="badges">
-                    <div class="badge">🏅</div>
-                    <div class="badge">🏅</div>
-                    <div class="badge-desat">🏅</div>
+                    <div id="badge1" class="badge-desat" title="Top 3: Weekly">📅</div>
+                    <div id="badge2" class="badge-desat" title="Top 3: Monthly">🏅</div>
+                    <div id="badge3" class="badge-desat" title="Top 3: All-Time">🌎</div>
                 </div>
 
                 <h2>Goals:</h2>
@@ -45,11 +45,11 @@
                     <div class="goal-item">
                         <div class="progress-bar-cont">
                             <div class="progress-bar">
-                                <div class="progress" id="goal-progress"></div>
+                                <div id="goal-progress" class="progress" style="width: 0%"></div>
                             </div>
-                            <button class="edit-goal" id="edit-goal-btn">✏️</button>
+                            <button class="edit-goal" aria-label="Edit goal">✏️</button>
                         </div>
-                        <p><span id="goal-description">Pick a goal!</span> (<span id="goal-percentage">100</span>% Complete)</p>
+                        <p><span id="goal-description">Pick a goal!</span> (<span id="goal-percentage">0</span>% Complete)</p>
                     </div>
                 </div>
             </div>
@@ -57,58 +57,54 @@
             <div class="right-column">
                 <div class="weekly-challenge">
                     <h2>Weekly Challenge:</h2>
-                    <p>Can you do <span id="challenge-amount">X</span> of <span id="challenge-exercise">this exercise</span>?</p>
+                    <p>Can you do <span id="challenge-amount">30</span> minutes of <span id="challenge-exercise">cardio</span>?</p>
+                    <label class="toggle-option">
+                        <input type="checkbox" id="challenge-complete">
+                        <span>&nbsp;Done!</span>
+                    </label>
                 </div>
 
                 <div class="weekly-top-users">
                     <h2>Weekly Top Users:</h2>
-                    <ol id="top-users-list">
-                        <li>User A - X Pts</li>
-                        <li>User B - X Pts</li>
-                        <li>User C - X Pts</li>
-                        <li>User D - X Pts</li>
-                        <li>User E - X Pts</li>
-                    </ol>
-                    <a href="#leaderboard" class="leaderboard-link" data-page="leaderboard">
-                        Leaderboard <span class="leaderboard-link-arrow">→</span>
-                    </a>
+                    <ol id="top-users-list"></ol>
+                    <a href="#leaderboard" class="leaderboard-link">View Full Leaderboard →</a>
                 </div>
             </div>
         </section>
 
+        <!-- Log Page -->
         <section id="log" class="section page">
             <h2>Workout Log</h2>
             <div class="log-controls">
-                <button id="log-new-popup-trigger" class="log-new-button">Log New</button>
+                <button class="log-new-button">Log New</button>
             </div>
-            <div class="workout-entries" id="workout-entries">
-                <!-- Workout entries will be dynamically added here -->
-            </div>
+            <div id="workout-entries" class="workout-entries"></div>
         </section>
 
+        <!-- Leaderboard Page -->
         <section id="leaderboard" class="section page">
             <h2>Leaderboard</h2>
-            <div class="leaderboard-controls">
+            <div class="leaderboard-controls" style="margin-bottom: 10px;">
                 <select id="leaderboard-period">
                     <option value="weekly">Weekly</option>
                     <option value="monthly">Monthly</option>
-                    <option value="all-time">All-Time</option>
+                    <option value="allTime">All-Time</option>
                 </select>
             </div>
-            <ol class="leaderboard-list" id="leaderboard-list">
-                <!-- Leaderboard entries will be dynamically added here -->
-            </ol>
+            <div id="leaderboard-list"></div>
         </section>
 
+        <!-- Settings Page -->
         <section id="settings" class="section page">
             <h2>Settings</h2>
             <div class="settings-options">
-                <strong>Appearance</strong>
-                <div class="toggle-option" style="margin-bottom: 6px;">
+                <h3>Appearance</h3>
+                <div class="toggle-option">
                     <label for="dark-mode-toggle">Dark Mode:</label>
-                    <input type="checkbox" id="dark-mode-toggle" checked>
+                    <input type="checkbox" id="dark-mode-toggle">
                 </div>
-                <strong>Privacy</strong>
+
+                <h3>Privacy</h3>
                 <div class="toggle-option">
                     <label for="email-notifications-toggle">Email Notifications:</label>
                     <input type="checkbox" id="email-notifications-toggle">
@@ -118,16 +114,18 @@
                     <input type="checkbox" id="activity-reminders-toggle">
                 </div>
             </div>
-            <a href="mailto:contact@motionmetrics.com"><button class="contact-us-button">Contact Us</button></a><br>
+            <button class="contact-us-button">Contact Us</button>
             <button class="log-out-button">Log Out</button>
         </section>
 
+        <!-- Profile Page -->
         <section id="profile" class="section page">
             <h2>Profile</h2>
-            <p>Name: <span id="profile-name">Error</span></p>
-            <p>Email: <span id="profile-email">error@site.com</span></p>
+            <p>Name: <span id="profile-name"></span></p>
+            <p>Email: <span id="profile-email"></span></p>
         </section>
 
+        <!-- Login Page -->
         <section id="login" class="section page">
             <h2>Login</h2>
             <form id="login-form">
@@ -135,49 +133,66 @@
                 <input type="password" id="password" placeholder="Password" required>
                 <button type="submit">Login</button>
             </form>
-            <p style="padding-top: 10px;">Credentials are "example:password123" for testing!</p>
+            <p class="login-hint" style="margin-top: 10px">Credentials are "example:password123" for testing!</p>
         </section>
     </main>
 
-    <dialog id="log-new-popup" class="popup">
+    <!-- Popups -->
+    <dialog id="log-new-popup">
         <h3>Log New Workout</h3>
         <form id="log-new-form">
-            <label for="log-date">Date:</label>
             <input type="date" id="log-date" required>
-            <label for="log-activity">Activity:</label>
-            <input type="text" id="log-activity" required>
-            <label for="log-duration">Duration (minutes):</label>
-            <input type="number" id="log-duration" required>
-            <button type="submit">Save Workout</button>
-            <button class="close-popup">Close</button>
+            <select id="log-activity" required>
+                <option value="">Select Activity</option>
+                <option value="Running">Running</option>
+                <option value="Cycling">Cycling</option>
+                <option value="Swimming">Swimming</option>
+                <option value="Weight Training">Weight Training</option>
+                <option value="Yoga">Yoga</option>
+                <option value="HIIT">HIIT</option>
+            </select>
+            <input type="number" id="log-duration" placeholder="Duration (minutes)" required min="1">
+            <div class="popup-buttons">
+                <button type="submit">Save Workout</button>
+                <button type="button" class="close-popup">Close</button>
+            </div>
         </form>
     </dialog>
 
-    <dialog id="edit-goal-popup" class="popup">
+    <dialog id="edit-goal-popup">
         <h3>Edit Goal</h3>
         <form id="edit-goal-form">
-            <label for="goal-description-input">Goal:</label>
-            <input type="text" id="goal-description-input" required>
-            <label for="goal-progress-input">Progress (%):</label>
-            <input type="number" id="goal-progress-input" min="0" max="100" required>
-            <button type="submit">Save Goal</button>
-            <button class="close-popup">Close</button>
+            <input type="text" id="goal-description-input" placeholder="Goal description" required>
+            <input type="number" id="goal-progress-input" placeholder="Progress (%)" required min="0" max="100">
+            <div class="popup-buttons">
+                <button type="submit">Save Goal</button>
+                <button type="button" class="close-popup">Close</button>
+            </div>
         </form>
     </dialog>
 
-    <dialog id="edit-workout-popup" class="popup">
+    <dialog id="edit-workout-popup">
         <h3>Edit Workout</h3>
         <form id="edit-workout-form">
-            <label for="edit-workout-date">Date:</label>
             <input type="date" id="edit-workout-date" required>
-            <label for="edit-workout-activity">Activity:</label>
-            <input type="text" id="edit-workout-activity" required>
-            <label for="edit-workout-duration">Duration (minutes):</label>
-            <input type="number" id="edit-workout-duration" required>
-            <button type="submit">Save Changes</button>
-            <button type="button" id="delete-workout-btn">Delete Workout</button>
-            <button class="close-popup">Close</button>
+            <select id="edit-workout-activity" required>
+                <option value="">Select Activity</option>
+                <option value="Running">Running</option>
+                <option value="Cycling">Cycling</option>
+                <option value="Swimming">Swimming</option>
+                <option value="Weight Training">Weight Training</option>
+                <option value="Yoga">Yoga</option>
+                <option value="HIIT">HIIT</option>
+            </select>
+            <input type="number" id="edit-workout-duration" placeholder="Duration (minutes)" required min="1">
+            <div class="popup-buttons">
+                <button type="submit">Save Changes</button>
+                <button type="button" id="delete-workout-btn">Delete Workout</button>
+                <button type="button" class="close-popup">Close</button>
+            </div>
         </form>
     </dialog>
+
+    <script src="interaction.js"></script>
 </body>
 </html>

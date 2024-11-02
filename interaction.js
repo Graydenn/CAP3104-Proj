@@ -2,7 +2,82 @@ document.addEventListener('DOMContentLoaded', () => {
     // Page Navigation
     const navLinks = document.querySelectorAll('nav a, .leaderboard-link');
     const pages = document.querySelectorAll('.page');
-    
+
+    class User {
+        constructor(name, weekly, monthly, allTime) {
+            this.name = name;
+            this.weekly = weekly;
+            this.monthly = monthly;
+            this.allTime = allTime;
+        }
+        get getName(){
+            return this.name;
+        }
+        get getWeekly()
+        {
+            return this.weekly;
+        }
+        get getMonthly()
+        {
+            return this.monthly;
+        }
+        get getAllTime(){
+            return this.allTime;
+        }
+        set setName(newName){
+            this.name= newName;
+        }
+        set setWeekly(newWeekly)
+        {
+            this.weekly= newWeekly;
+        }
+        set setMonthly(newMonthly)
+        {
+            this.monthly= newMonthly;
+        }
+        set setAllTime(newAllTime){
+            this.allTime= newAllTime;
+        }
+        workoutLogged(time) {
+            time = parseInt(time, 10);
+            this.weekly = (parseInt(this.weekly, 10) || 0) + time;
+            this.monthly = (parseInt(this.monthly, 10) || 0) + time;
+            this.allTime = (parseInt(this.allTime, 10) || 0) + time;
+        }
+    }
+
+    let users = loadUsers(); // Load users from local storage
+    const currUser = users.find(user => user.name === "Example") || new User("Example", 0, 0, 0);
+
+    document.getElementById('user-greeting').textContent = currUser.name;
+
+    function loadUsers() {
+        const storedUsers = localStorage.getItem('users');
+        return storedUsers ? JSON.parse(storedUsers).map(userData => new User(userData.name, userData.weekly, userData.monthly, userData.allTime)) : [
+            new User("Sarah C", 45, 135, 5945),
+            new User("Will G.", 20, 60, 2640),
+            new User("Alan W.", 15, 66, 1970),
+            new User("Alex C.", 25, 74, 3256),
+            new User("Paula P.", 10, 35, 1435),
+            new User("Brad A.", 90, 270, 10800),
+            new User("Rhys S.", 17, 51, 2260),
+            new User("Jesse F.", 77, 231, 10164),
+            new User("Rose M.", 67, 201, 8890),
+            new User("Example", 0, 0, 0) 
+        ];
+    }
+
+    function saveUsers() {
+        const usersData = users.map(user => ({
+            name: user.name,
+            weekly: user.weekly,
+            monthly: user.monthly,
+            allTime: user.allTime
+        }));
+
+        localStorage.setItem('users', JSON.stringify(usersData));
+    }
+
     function showPage(pageId) {
         pages.forEach(page => page.style.display = 'none');
         const activePage = document.getElementById(pageId);
@@ -31,11 +106,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // Attach event listeners for the new page
         if (pageId === 'home') {
             attachHomeEventListeners();
+            homePopulateLeaderboard();
         } else if (pageId === 'log') {
             attachLogEventListeners();
         } else if (pageId === 'leaderboard') {
             populateLeaderboard();
+            attachLeaderboardEventListener();
         }
+
+        // Restore badge earned status on page load
+        badgeCheck(users);
     }
 
     navLinks.forEach(link => {
@@ -67,9 +147,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const duration = document.getElementById('log-duration').value;
 
             addWorkoutEntry(date, activity, duration);
+            currUser.workoutLogged(duration);
+
+            saveUsers();
+
+            badgeCheck(users);
             logNewPopup.close();
             logNewForm.reset();
             updateDaysSinceWorkout(new Date(date));
+            saveWorkouts();
         });
     }
 
@@ -109,6 +195,43 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteWorkoutEntry(workoutId);
             editWorkoutPopup.close();
         });
+    }
+
+    function badgeCheck(array) {
+        // Sort users by weekly, monthly, and all-time scores to check for badge eligibility
+
+        const createSortedArray = (property) => [...array].sort((a, b) => b[property] - a[property]);
+
+        const weeklySorted = createSortedArray('weekly');
+        const monthlySorted = createSortedArray('monthly');
+        const allTimeSorted = createSortedArray('allTime');
+
+
+        const weeklyBadge = document.getElementById("badge1");
+        const monthlyBadge = document.getElementById("badge2");
+        const allTimeBadge = document.getElementById("badge3");
+
+        function updateBadge(badgeElement, sortedUsers, timeframe) {
+            const index = sortedUsers.findIndex(user => user.name === currUser.name);
+            if (index !== -1 && index < 3) { // Top 3 get the badge
+                badgeElement.classList.remove('badge-desat');
+                badgeElement.classList.add('badge');
+
+                 // Store badge earned status in localStorage
+                localStorage.setItem(`badge-${timeframe}`, 'true');
+
+            } else {
+                badgeElement.classList.add('badge-desat');
+                badgeElement.classList.remove('badge');
+
+                // Remove badge earned status if no longer eligible
+                localStorage.removeItem(`badge-${timeframe}`);
+            }
+        }
+
+        updateBadge(weeklyBadge, weeklySorted, 'weekly');
+        updateBadge(monthlyBadge, monthlySorted, 'monthly');
+        updateBadge(allTimeBadge, allTimeSorted, 'allTime');
     }
 
     // Helper Functions
@@ -175,6 +298,17 @@ document.addEventListener('DOMContentLoaded', () => {
             goalPercentage.textContent = `${progress}`;
             goalProgress.style.width = `${progress}%`;
         }
+
+        // Save goal to localStorage
+        localStorage.setItem('goal', JSON.stringify({ description, progress }));
+    }
+
+    function loadGoal() {
+        const storedGoal = localStorage.getItem('goal');
+        if (storedGoal) {
+            const { description, progress } = JSON.parse(storedGoal);
+            updateGoal(description, progress);
+        }
     }
 
     function updateDaysSinceWorkout(lastWorkoutDateString) {
@@ -231,9 +365,69 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function attachLeaderboardEventListener()
+    {
+        const periodDropdown = document.querySelector('#leaderboard-period');
+        if (periodDropdown) {
+            periodDropdown.addEventListener('change', (event) => {
+                populateLeaderboard();
+            });
+        }
+    }
+
+    function homePopulateLeaderboard() {
+
+        const weeklySorted = [...users].sort((a, b) => b.weekly - a.weekly);
+  
+  
+          const list = document.getElementById("top-users-list");
+          list.innerHTML = ''; // Clear previous entries
+  
+          for (let i = 0; i < Math.min(5, weeklySorted.length); ++i) {
+              let li = document.createElement('li');
+              li.innerText = weeklySorted[i].name;
+              list.appendChild(li);
+          }
+    }
+
     function populateLeaderboard() {
-        // Placeholder function for populating leaderboard
-        console.log('Populating leaderboard...');
+
+        period = document.querySelector('#leaderboard-period');
+        dropdown = period.options[period.selectedIndex].value;
+
+        const lbTable = document.createElement("table");
+        lbTable.innerHTML = "<thead><th>Rank</th><th>User</th><th>Workout Duration</th></thead>";
+        const target = document.getElementById('leaderboard-list');
+        target.innerHTML = "";
+
+
+        const sortedUsers = [...users].sort((a, b) => b[dropdown] - a[dropdown]);
+
+
+        for (let i = 0; i < sortedUsers.length; i++) {
+            const newRow = document.createElement("tr");
+            const rankCell = document.createElement("td");
+            const tdName = document.createElement("td");
+            const tdTime = document.createElement("td");
+
+            rankCell.textContent = i + 1;  // Add rank
+            tdName.textContent = sortedUsers[i].name;
+            tdTime.textContent = sortedUsers[i][dropdown];
+
+            newRow.appendChild(rankCell); // Append rank cell
+            newRow.appendChild(tdName);
+            newRow.appendChild(tdTime);
+
+            if (sortedUsers[i].name === currUser.name) {
+                newRow.classList.add("current-user-row");
+            }
+
+
+            lbTable.appendChild(newRow);
+        }
+
+
+        target.appendChild(lbTable);
     }
 
     // Update profile information
@@ -268,14 +462,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Logout functionality
-    const logoutButton = document.querySelector('.log-out-button');
-    
-    if (logoutButton) {
-        logoutButton.addEventListener('click', () => {
-            showPage('login');
-        });
-    }
 
     document.body.addEventListener('submit', (event) => {
         if (event.target.id === 'login-form') {
@@ -324,6 +510,84 @@ document.addEventListener('DOMContentLoaded', () => {
         handlePrivacyToggle(activityRemindersToggle, 'Activity reminders');
     }
 
-    // Initial page load
-    showPage('home');
+        // Local Storage and User Management
+        let currentUser = null;
+
+        function loadUserFromLocalStorage() {
+            const storedUser = localStorage.getItem('currentUser');
+            if (storedUser) {
+                return JSON.parse(storedUser);
+            }
+            return null;
+        }
+    
+        function saveUserToLocalStorage(user) {
+            localStorage.setItem('currentUser', JSON.stringify(user));
+        }
+    
+        function createUser(username, password) { // No email in this example
+            return new user(username, 0, 0, 0); // Assuming 'user' class is defined
+        }
+    
+        function loginUser(username, password) {
+            // In a real application, you'd verify against a database/server
+            if (username === 'example' && password === 'password123') { // Replace with actual logic
+                currentUser = loadUserFromLocalStorage() || createUser(username); // Load or create if new
+                saveUserToLocalStorage(currentUser);
+                showPage('home');
+                updateProfileInfo(); // Update profile section with user data
+                return true; // Successful login
+            } else {
+                return false; // Login failed
+            }
+        }
+    
+    
+    
+        function logoutUser() {
+            localStorage.removeItem('currentUser');
+            currentUser = null;
+            showPage('login');
+        }
+    
+    
+        function updateProfileInfo() {
+            if (currentUser) {
+                document.getElementById('profile-name').textContent = currentUser.name;
+                // ... (other profile updates)
+            }
+        }
+    
+        // Modify logout button functionality
+        const logoutButton = document.querySelector('.log-out-button');
+        if (logoutButton) {
+            logoutButton.addEventListener('click', logoutUser); // Call logoutUser function
+        }
+    
+        // Login form handling
+        document.body.addEventListener('submit', (event) => {
+            if (event.target.id === 'login-form') {
+                event.preventDefault();
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+    
+                if (loginUser(username, password)) {
+                    // Successful login, page will be shown by loginUser()
+                } else {
+                    alert('Invalid credentials');
+                }
+            }
+        });
+    
+        // ... rest of the code
+    
+    
+        // Initial page load (modified)
+        currentUser = loadUserFromLocalStorage();
+        if (currentUser) {
+            showPage('home');
+            updateProfileInfo();
+        } else {
+            showPage('login'); // Start at login if no user in local storage
+        }
 });
