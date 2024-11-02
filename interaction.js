@@ -3,6 +3,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const navLinks = document.querySelectorAll('nav a, .leaderboard-link');
     const pages = document.querySelectorAll('.page');
     
+    class user {
+
+        constructor(name, weekly, monthly, allTime)
+        {
+            this.name = name;
+            this.weekly= weekly;
+            this.monthly= monthly;
+            this.allTime= allTime;
+        }
+        get getName(){
+            return this.name;
+        }
+        get getWeekly()
+        {
+            return this.weekly;
+        }
+        get getMonthly()
+        {
+            return this.monthly;
+        }
+        get getAllTime(){
+            return this.allTime;
+        }
+        set setName(newName){
+             this.name= newName;
+        }
+        set setWeekly(newWeekly)
+        {
+            this.weekly= newWeekly;
+        }
+        set setMonthly(newMonthly)
+        {
+            this.monthly= newMonthly;
+        }
+        set setAllTime(newAllTime){
+            this.allTime= newAllTime;
+        }
+        workoutLogged(time){
+            this.weekly+=time;
+            this.monthly+=time;
+            this.allTime+=time;
+        }
+      }
+
     function showPage(pageId) {
         pages.forEach(page => page.style.display = 'none');
         const activePage = document.getElementById(pageId);
@@ -31,10 +75,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Attach event listeners for the new page
         if (pageId === 'home') {
             attachHomeEventListeners();
+            homePopulateLeaderboard();
         } else if (pageId === 'log') {
             attachLogEventListeners();
         } else if (pageId === 'leaderboard') {
             populateLeaderboard();
+            attachLeaderboardEventListener();
         }
     }
 
@@ -231,9 +277,107 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function attachLeaderboardEventListener()
+    {
+        const periodDropdown = document.querySelector('#leaderboard-period');
+        if (periodDropdown) {
+            periodDropdown.addEventListener('change', (event) => {
+                populateLeaderboard();
+            });
+        }
+    }
+
+    function homePopulateLeaderboard()
+    {
+        const userA= new user("Sarah C", 45, 135, 5945);
+        const userB= new user("Will G.", 20, 60, 2640);
+        const userC= new user("Alan W.", 15, 66, 1970)
+        const userD= new user("Alex C.", 25, 74, 3256);
+        const userE= new user("Paula P.", 10, 35, 1435);
+        const userF= new user("Brad A.", 90, 270, 10800);
+        const userG= new user("Rhys S.", 17, 51, 2260);
+        const userH= new user("Jesse F.", 77, 231, 10164);
+        const userI= new user("Rose M.", 67, 201, 8890);
+        const userJ= new user("Cecil P.", 5, 15, 2200)
+        let users= [userA, userB, userC, userD, userE, userF, userG, userH, userI, userJ];
+        var res = users.sort((a, b) => b.getWeekly-a.getWeekly);
+
+        let list = document.getElementById("top-users-list");
+        for (i = 0; i < 5; ++i) {
+            let li = document.createElement('li');
+            li.innerText = users[i].getName;
+            list.appendChild(li);
+        }
+    }
     function populateLeaderboard() {
         // Placeholder function for populating leaderboard
         console.log('Populating leaderboard...');
+        //create users
+        const userA= new user("Sarah C", 45, 135, 5945);
+        const userB= new user("Will G.", 20, 60, 2640);
+        const userC= new user("Alan W.", 15, 66, 1970)
+        const userD= new user("Alex C.", 25, 74, 3256);
+        const userE= new user("Paula P.", 10, 35, 1435);
+        const userF= new user("Brad A.", 90, 270, 10800);
+        const userG= new user("Rhys S.", 17, 51, 2260);
+        const userH= new user("Jesse F.", 77, 231, 10164);
+        const userI= new user("Rose M.", 67, 201, 8890);
+        const userJ= new user("Cecil P.", 5, 15, 2200)
+        let users= [userA, userB, userC, userD, userE, userF, userG, userH, userI, userJ];
+        //users[10]= currUser
+
+        period =  document.querySelector('#leaderboard-period');
+        dropdown = period.options[period.selectedIndex].value;
+        const lbTable = document.createElement("table");
+        lbTable.innerHTML = "<thead><th>User</th><th>Workout Duration</th></thead>";
+        const target = document.getElementById('leaderboard-list');
+        target.innerHTML = "";
+        if(dropdown==="weekly")
+        {
+            var res = users.sort((a, b) => b.getWeekly-a.getWeekly);
+            for(person of users){
+                const newRow = document.createElement("tr");
+                const tdName = document.createElement("td");
+                const tdTime = document.createElement("td");
+                tdName.textContent = person.getName;
+                tdTime.textContent = person.getWeekly;    
+                newRow.appendChild(tdName);
+                newRow.appendChild(tdTime);
+                lbTable.appendChild(newRow);
+            }
+        }
+        else if(dropdown==="monthly")
+        {
+            var res = users.sort((a, b) => b.getMonthly-a.getMonthly);
+            for(person of users){
+                const newRow = document.createElement("tr");
+                const tdName = document.createElement("td");
+                const tdTime = document.createElement("td");
+                tdName.textContent = person.getName;
+                tdTime.textContent = person.getMonthly;    
+                newRow.appendChild(tdName);
+                newRow.appendChild(tdTime);
+                lbTable.appendChild(newRow);
+            }
+        }
+        else if(dropdown==="all-time")
+        {
+            var res = users.sort((a, b) => b.getAllTime-a.getAllTime);
+            for(person of users){
+                const newRow = document.createElement("tr");
+                const tdName = document.createElement("td");
+                const tdTime = document.createElement("td");
+                tdName.textContent = person.getName;
+                tdTime.textContent = person.getAllTime;    
+                newRow.appendChild(tdName);
+                newRow.appendChild(tdTime);
+                lbTable.appendChild(newRow);
+            }
+        }
+
+        target.appendChild(lbTable);
+
+
     }
 
     // Update profile information
