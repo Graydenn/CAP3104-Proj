@@ -1,13 +1,4 @@
-// interaction.js
-
 document.addEventListener('DOMContentLoaded', () => {
-    // Set max attribute for date inputs to today's date to prevent future dates
-    const today = new Date().toISOString().split('T')[0];
-    const dateInputs = document.querySelectorAll('input[type="date"]');
-    dateInputs.forEach(input => {
-        input.setAttribute('max', today);
-    });
-
     // Page Navigation
     const navLinks = document.querySelectorAll('nav a, .leaderboard-link');
     const pages = document.querySelectorAll('.page');
@@ -17,21 +8,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const todayDate = today.getDate();
         const todayDay = today.getDay();
 
-        // Get first date of week
-        const firstDayOfWeek = new Date(today);
-        firstDayOfWeek.setDate(todayDate - todayDay);
+        // get first date of week
+        const firstDayOfWeek = new Date(today.setDate(todayDate - todayDay));
 
-        // Get last date of week
+        // get last date of week
         const lastDayOfWeek = new Date(firstDayOfWeek);
         lastDayOfWeek.setDate(lastDayOfWeek.getDate() + 6);
 
-        // Check if date is within the current week
+        // if date is equal or within the first and last dates of the week
         return date >= firstDayOfWeek && date <= lastDayOfWeek;
+
     }
 
     function checkMonth(date) {
         const today = new Date();
-        return date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
+        const todayMonth = today.getMonth();
+        const dateMonth = date.getMonth();
+
+        return (dateMonth === todayMonth);
     }
 
     class User {
@@ -41,12 +35,47 @@ document.addEventListener('DOMContentLoaded', () => {
             this.monthly = monthly;
             this.allTime = allTime;
         }
+        get getName() {
+            return this.name;
+        }
+        get getWeekly() {
+            return this.weekly;
+        }
+        get getMonthly() {
+            return this.monthly;
+        }
+        get getAllTime() {
+            return this.allTime;
+        }
+        set setName(newName) {
+            this.name = newName;
+        }
+        set setWeekly(newWeekly) {
+            this.weekly = newWeekly;
+        }
+        set setMonthly(newMonthly) {
+            this.monthly = newMonthly;
+        }
+        set setAllTime(newAllTime) {
+            this.allTime = newAllTime;
+        }
+        workoutLogged(date, time) {
+            time = parseInt(time, 10);
+
+            if (checkWeek(date)) {
+                this.weekly = (parseInt(this.weekly, 10) || 0) + time;
+            }
+            if (checkMonth(date)) {
+                this.monthly = (parseInt(this.monthly, 10) || 0) + time;
+            }
+            this.allTime = (parseInt(this.allTime, 10) || 0) + time;
+        }
+
     }
 
-    // Load users from localStorage or initialize default users
-    let users = loadUsers();
-
+    let users = loadUsers(); // Load users from local storage
     const currUser = users.find(user => user.name === "Example") || new User("Example", 0, 0, 0);
+
     document.getElementById('user-greeting').textContent = currUser.name;
 
     function loadUsers() {
@@ -72,6 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
             monthly: user.monthly,
             allTime: user.allTime
         }));
+
         localStorage.setItem('users', JSON.stringify(usersData));
     }
 
@@ -81,11 +111,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activePage) {
             activePage.style.display = 'block';
         }
+
         navLinks.forEach(link => link.classList.remove('active'));
         const activeLink = document.querySelector(`nav a[href="#${pageId}"]`);
         if (activeLink) {
             activeLink.classList.add('active');
         }
+
         // Adjust header for login page
         if (pageId === 'login') {
             document.querySelector('header>nav').style.display = 'none';
@@ -97,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 activeLink.classList.add('active');
             }
         }
+
         // Attach event listeners for the new page
         if (pageId === 'home') {
             attachHomeEventListeners();
@@ -107,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
             populateLeaderboard();
             attachLeaderboardEventListener();
         }
+
         // Restore badge earned status on page load
         badgeCheck(users);
     }
@@ -138,9 +172,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const date = document.getElementById('log-date').value;
             const activity = document.getElementById('log-activity').value;
             const duration = document.getElementById('log-duration').value;
+
+            const dateFormatted = new Date(date);
             addWorkoutEntry(date, activity, duration);
+            currUser.workoutLogged(dateFormatted, duration);
+
+            saveUsers();
+
+            badgeCheck(users);
             logNewPopup.close();
             logNewForm.reset();
+            updateDaysSinceWorkout(new Date(date));
+            saveWorkouts();
         });
     }
 
@@ -151,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
             event.preventDefault();
             const description = document.getElementById('goal-description-input').value;
             const progress = document.getElementById('goal-progress-input').value;
+
             updateGoal(description, progress);
             editGoalPopup.close();
         });
@@ -165,7 +209,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const activity = document.getElementById('edit-workout-activity').value;
             const duration = document.getElementById('edit-workout-duration').value;
             const workoutId = editWorkoutForm.dataset.workoutId;
+
             updateWorkoutEntry(workoutId, date, activity, duration);
+
+
             editWorkoutPopup.close();
         });
     }
@@ -180,13 +227,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Badge Check Function
     function badgeCheck(array) {
         // Sort users by weekly, monthly, and all-time scores to check for badge eligibility
+
         const createSortedArray = (property) => [...array].sort((a, b) => b[property] - a[property]);
+
         const weeklySorted = createSortedArray('weekly');
         const monthlySorted = createSortedArray('monthly');
         const allTimeSorted = createSortedArray('allTime');
+
+
         const weeklyBadge = document.getElementById("badge1");
         const monthlyBadge = document.getElementById("badge2");
         const allTimeBadge = document.getElementById("badge3");
@@ -196,11 +246,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (index !== -1 && index < 3) { // Top 3 get the badge
                 badgeElement.classList.remove('badge-desat');
                 badgeElement.classList.add('badge');
+
                 // Store badge earned status in localStorage
                 localStorage.setItem(`badge-${timeframe}`, 'true');
+
             } else {
                 badgeElement.classList.add('badge-desat');
                 badgeElement.classList.remove('badge');
+
                 // Remove badge earned status if no longer eligible
                 localStorage.removeItem(`badge-${timeframe}`);
             }
@@ -211,133 +264,51 @@ document.addEventListener('DOMContentLoaded', () => {
         updateBadge(allTimeBadge, allTimeSorted, 'allTime');
     }
 
-    // Global workouts array to store all user's workouts
-    let workouts = loadWorkouts();
-
-    function loadWorkouts() {
-        const storedWorkouts = localStorage.getItem('workouts');
-        return storedWorkouts ? JSON.parse(storedWorkouts) : [];
-    }
-
-    function saveWorkouts() {
-        localStorage.setItem('workouts', JSON.stringify(workouts));
-    }
-
-    // Function to recalculate user totals based on workouts array
-    function recalculateUserTotals() {
-        // Reset totals
-        currUser.weekly = 0;
-        currUser.monthly = 0;
-        currUser.allTime = 0;
-
-        let mostRecentWorkoutDate = null;
-
-        workouts.forEach(workout => {
-            const workoutDate = new Date(workout.date);
-            const duration = workout.duration;
-
-            if (checkWeek(workoutDate)) {
-                currUser.weekly += duration;
-            }
-            if (checkMonth(workoutDate)) {
-                currUser.monthly += duration;
-            }
-            currUser.allTime += duration;
-
-            if (!mostRecentWorkoutDate || workoutDate > mostRecentWorkoutDate) {
-                mostRecentWorkoutDate = workoutDate;
-            }
-        });
-
-        saveUsers();
-        badgeCheck(users);
-
-        // Update days since last workout
-        if (!mostRecentWorkoutDate) {
-            // No workouts logged
-            const lastWorkoutContainer = document.querySelector('.last-workout');
-            if (lastWorkoutContainer) {
-                lastWorkoutContainer.innerHTML = `<p>You've never logged a workout.</p>`;
-            }
-        } else {
-            // Workouts exist, update the days since last workout
-            updateDaysSinceWorkout(mostRecentWorkoutDate);
-        }
-    }
-
-    // Function to add a new workout
+    // Helper Functions
     function addWorkoutEntry(date, activity, duration) {
-        const workoutId = Date.now().toString();
-
-        // Add to workouts array
-        workouts.push({
-            id: workoutId,
-            date: date,
-            activity: activity,
-            duration: parseInt(duration, 10)
-        });
-
-        saveWorkouts();
-        recalculateUserTotals();
-        renderWorkoutEntries();
-    }
-
-    // Function to update an existing workout
-    function updateWorkoutEntry(id, date, activity, duration) {
-        const workout = workouts.find(w => w.id === id);
-        if (workout) {
-            workout.date = date;
-            workout.activity = activity;
-            workout.duration = parseInt(duration, 10);
-
-            saveWorkouts();
-            recalculateUserTotals();
-            renderWorkoutEntries();
-        }
-    }
-
-    // Function to delete a workout
-    function deleteWorkoutEntry(id) {
-        const index = workouts.findIndex(w => w.id === id);
-        if (index !== -1) {
-            workouts.splice(index, 1);
-
-            saveWorkouts();
-            recalculateUserTotals();
-            renderWorkoutEntries();
-        }
-    }
-
-    // Function to render workout entries from workouts array
-    function renderWorkoutEntries() {
         const workoutEntries = document.getElementById('workout-entries');
         if (workoutEntries) {
-            workoutEntries.innerHTML = '';
-    
-            // Sort workouts by date descending (most recent first)
-            const sortedWorkouts = workouts.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-            sortedWorkouts.forEach(workout => {
-                const entry = document.createElement('div');
-                entry.className = 'workout-entry';
-                entry.dataset.id = workout.id;
-                entry.innerHTML = `
-                    <p>Date: ${workout.date} | Activity: ${workout.activity} | Duration: ${workout.duration} mins</p>
-                    <button class="edit-workout" data-id="${workout.id}">✏️</button>
-                `;
-                workoutEntries.appendChild(entry);
-                entry.querySelector('.edit-workout').addEventListener('click', () => {
-                    openEditWorkoutPopup(workout.id, workout.date, workout.activity, workout.duration);
-                });
+            const workoutId = Date.now().toString();
+            const entry = document.createElement('div');
+            entry.className = 'workout-entry';
+            entry.dataset.id = workoutId;
+            entry.innerHTML = `
+                <p>Date: ${date} | Activity: ${activity} | Duration: ${duration} mins</p>
+                <button class="edit-workout" data-id="${workoutId}">✏️</button>
+            `;
+            workoutEntries.prepend(entry);
+
+            entry.querySelector('.edit-workout').addEventListener('click', () => {
+                openEditWorkoutPopup(workoutId, date, activity, duration);
             });
         }
     }
 
-    // Function to open edit workout popup
+    function updateWorkoutEntry(id, date, activity, duration) {
+        const entry = document.querySelector(`.workout-entry[data-id="${id}"]`);
+        if (entry) {
+            entry.innerHTML = `
+                <p>Date: ${date} | Activity: ${activity} | Duration: ${duration} mins</p>
+                <button class="edit-workout" data-id="${id}">✏️</button>
+            `;
+            entry.querySelector('.edit-workout').addEventListener('click', () => {
+                openEditWorkoutPopup(id, date, activity, duration);
+            });
+        }
+    }
+
+    function deleteWorkoutEntry(id) {
+        const entry = document.querySelector(`.workout-entry[data-id="${id}"]`);
+        if (entry) {
+            entry.remove();
+        }
+    }
+
     function openEditWorkoutPopup(id, date, activity, duration) {
         const editWorkoutDate = document.getElementById('edit-workout-date');
         const editWorkoutActivity = document.getElementById('edit-workout-activity');
         const editWorkoutDuration = document.getElementById('edit-workout-duration');
+
         if (editWorkoutDate && editWorkoutActivity && editWorkoutDuration && editWorkoutForm) {
             editWorkoutDate.value = date;
             editWorkoutActivity.value = activity;
@@ -347,7 +318,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Function to update goal progress
+
+
     function updateGoal(description, progress) {
         const goalDescription = document.getElementById('goal-description');
         const goalPercentage = document.getElementById('goal-percentage');
@@ -358,11 +330,11 @@ document.addEventListener('DOMContentLoaded', () => {
             goalPercentage.textContent = `${progress}`;
             goalProgress.style.width = `${progress}%`;
         }
+
         // Save goal to localStorage
         localStorage.setItem('goal', JSON.stringify({ description, progress }));
     }
 
-    // Load goal from localStorage
     function loadGoal() {
         const storedGoal = localStorage.getItem('goal');
         if (storedGoal) {
@@ -371,23 +343,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Function to update days since last workout
-    function updateDaysSinceWorkout(lastWorkoutDate) {
+    function updateDaysSinceWorkout(lastWorkoutDateString) {
         const today = dayjs(); // Get today's date using Day.js
-        const lastWorkout = dayjs(lastWorkoutDate); // Parse the input date
-    
-        const diffDays = today.diff(lastWorkout, 'day');
-    
-        const lastWorkoutContainer = document.querySelector('.last-workout');
-        if (lastWorkoutContainer) {
-            // Update the standard message with the correct number of days
-            lastWorkoutContainer.innerHTML = `
-                <p>It has been <span id="days-since-workout">${Math.max(0, diffDays)}</span> day(s) since your last workout.</p>
-            `;
+        const lastWorkout = dayjs(lastWorkoutDateString); // Parse the input date string
+
+        const diffDays = today.diff(lastWorkout, 'day'); // Calculate difference in days
+
+        const daysSinceWorkout = document.getElementById('days-since-workout');
+        if (daysSinceWorkout) {
+            daysSinceWorkout.textContent = ((Math.max(0, diffDays)) - 1);
         }
     }
 
-    // Attach event listeners for Home page
     function attachHomeEventListeners() {
         const editGoalBtn = document.querySelector('.edit-goal');
         if (editGoalBtn) {
@@ -405,6 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
+
         const leaderboardLink = document.querySelector('.leaderboard-link');
         if (leaderboardLink) {
             leaderboardLink.addEventListener('click', (event) => {
@@ -414,7 +382,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Attach event listeners for Log page
     function attachLogEventListeners() {
         const logNewButton = document.querySelector('.log-new-button');
         if (logNewButton) {
@@ -422,66 +389,75 @@ document.addEventListener('DOMContentLoaded', () => {
                 logNewPopup.showModal();
             });
         }
-        // Ensure the date input in log new workout form is updated
-        const logDateInput = document.getElementById('log-date');
-        if (logDateInput) {
-            logDateInput.setAttribute('max', today);
+
+        // Remove sort button if it exists
+        const sortButton = document.querySelector('.sort-button');
+        if (sortButton) {
+            sortButton.remove();
         }
     }
 
-    // Attach event listener for Leaderboard page
     function attachLeaderboardEventListener() {
         const periodDropdown = document.querySelector('#leaderboard-period');
         if (periodDropdown) {
-            periodDropdown.addEventListener('change', () => {
+            periodDropdown.addEventListener('change', (event) => {
                 populateLeaderboard();
             });
         }
     }
 
-    // Populate Home page leaderboard
     function homePopulateLeaderboard() {
+
         const weeklySorted = [...users].sort((a, b) => b.weekly - a.weekly);
+
 
         const list = document.getElementById("top-users-list");
         list.innerHTML = ''; // Clear previous entries
 
         for (let i = 0; i < Math.min(5, weeklySorted.length); ++i) {
             let li = document.createElement('li');
-            li.innerText = `${weeklySorted[i].name} (${weeklySorted[i].weekly} mins)`;
+            li.innerText = weeklySorted[i].name;
             list.appendChild(li);
         }
     }
 
-    // Populate Leaderboard page
     function populateLeaderboard() {
-        const periodSelect = document.querySelector('#leaderboard-period');
-        const dropdown = periodSelect.value;
-        const lbTable = document.createElement("table");
-        lbTable.innerHTML = "<thead><tr><th>Rank</th><th>User</th><th>Workout Duration</th></tr></thead>";
 
+        period = document.querySelector('#leaderboard-period');
+        dropdown = period.options[period.selectedIndex].value;
+
+        const lbTable = document.createElement("table");
+        lbTable.innerHTML = "<thead><th>Rank</th><th>User</th><th>Workout Duration</th></thead>";
         const target = document.getElementById('leaderboard-list');
         target.innerHTML = "";
-        const tbody = document.createElement('tbody');
+
 
         const sortedUsers = [...users].sort((a, b) => b[dropdown] - a[dropdown]);
+
+
         for (let i = 0; i < sortedUsers.length; i++) {
             const newRow = document.createElement("tr");
             const rankCell = document.createElement("td");
             const tdName = document.createElement("td");
             const tdTime = document.createElement("td");
+
             rankCell.textContent = i + 1;  // Add rank
             tdName.textContent = sortedUsers[i].name;
             tdTime.textContent = sortedUsers[i][dropdown];
+
             newRow.appendChild(rankCell); // Append rank cell
             newRow.appendChild(tdName);
             newRow.appendChild(tdTime);
+
             if (sortedUsers[i].name === currUser.name) {
                 newRow.classList.add("current-user-row");
             }
-            tbody.appendChild(newRow);
+
+
+            lbTable.appendChild(newRow);
         }
-        lbTable.appendChild(tbody);
+
+
         target.appendChild(lbTable);
     }
 
@@ -489,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileName = document.getElementById('profile-name');
     const profileEmail = document.getElementById('profile-email');
     if (profileName && profileEmail) {
-        profileName.textContent = currUser.name;
+        profileName.textContent = 'Example';
         profileEmail.textContent = 'example@site.com';
     }
 
@@ -506,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('darkMode', isDark);
     }
 
-    // Set initial dark mode state
+    // Set initial dark mode state (off by default)
     const savedDarkMode = localStorage.getItem('darkMode');
     setDarkMode(savedDarkMode === 'true');
 
@@ -516,6 +492,20 @@ document.addEventListener('DOMContentLoaded', () => {
             setDarkMode(darkModeToggle.checked);
         });
     }
+
+
+    document.body.addEventListener('submit', (event) => {
+        if (event.target.id === 'login-form') {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            if (username === 'example' && password === 'password123') {
+                showPage('home');
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+    });
 
     // Privacy checkboxes
     const emailNotificationsToggle = document.getElementById('email-notifications-toggle');
@@ -542,15 +532,18 @@ document.addEventListener('DOMContentLoaded', () => {
             showNotification(`${settingName} have been ${status} for ${email}.`);
         });
     }
+
     if (emailNotificationsToggle) {
         handlePrivacyToggle(emailNotificationsToggle, 'Email notifications');
     }
+
     if (activityRemindersToggle) {
         handlePrivacyToggle(activityRemindersToggle, 'Activity reminders');
     }
 
-    // User Management
+    // Local Storage and User Management
     let currentUser = null;
+
     function loadUserFromLocalStorage() {
         const storedUser = localStorage.getItem('currentUser');
         if (storedUser) {
@@ -563,28 +556,31 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('currentUser', JSON.stringify(user));
     }
 
-    function createUser(username) {
-        return new User(username, 0, 0, 0);
+    function createUser(username, password) { // No email in this example
+        return new user(username, 0, 0, 0);
     }
 
     function loginUser(username, password) {
-        // Simulate user authentication
-        if (username === 'example' && password === 'password123') {
-            currentUser = users.find(user => user.name === username) || createUser(username);
+        // In a real application, you'd verify against a database/server
+        if (username === 'example' && password === 'password123') { // For testing
+            currentUser = loadUserFromLocalStorage() || createUser(username); // Load or create if new
             saveUserToLocalStorage(currentUser);
             showPage('home');
-            updateProfileInfo();
-            return true;
+            updateProfileInfo(); // Update profile section with user data
+            return true; // Successful login
         } else {
             return false; // Login failed
         }
     }
+
+
 
     function logoutUser() {
         localStorage.removeItem('currentUser');
         currentUser = null;
         showPage('login');
     }
+
 
     function updateProfileInfo() {
         if (currentUser) {
@@ -595,7 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Modify logout button functionality
     const logoutButton = document.querySelector('.log-out-button');
     if (logoutButton) {
-        logoutButton.addEventListener('click', logoutUser);
+        logoutButton.addEventListener('click', logoutUser); // Call logoutUser function
     }
 
     // Login form handling
@@ -604,8 +600,9 @@ document.addEventListener('DOMContentLoaded', () => {
             event.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
+
             if (loginUser(username, password)) {
-                // Successful login
+                // Successful login, page will be shown by loginUser()
             } else {
                 alert('Invalid credentials');
             }
@@ -615,15 +612,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial page load
     currentUser = loadUserFromLocalStorage();
     if (currentUser) {
-        currUser.name = currentUser.name;
-        updateProfileInfo();
         showPage('home');
+        updateProfileInfo();
     } else {
-        showPage('login');
+        showPage('login'); // Start at login if no user in local storage
     }
-
-    // Load goals and workouts on page load
-    loadGoal();
-    renderWorkoutEntries();
-    recalculateUserTotals();
 });

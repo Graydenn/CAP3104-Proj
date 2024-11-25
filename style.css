@@ -271,6 +271,7 @@ h2 {
 .leaderboard-list {
     list-style-position: inside;
     padding-left: 0;
+    border-radius: var(--border-radius);
 }
 
 .leaderboard-list li {
@@ -299,7 +300,10 @@ div > input {
 /* Button Styles */
 .log-new-button,
 .contact-us-button,
-.log-out-button {
+.log-out-button,
+.save-workout,
+.close-popup,
+.save-goal {
     padding: 10px 15px;
     border: none;
     border-radius: var(--border-radius);
@@ -349,7 +353,7 @@ input, select {
 }
 
 select {
-    width: 94px;
+    width: 128px;
     height: 36px;
     background-color: var(--primary-color);
     color: #fff;
@@ -365,6 +369,7 @@ dialog {
     padding: 20px;
     max-width: 90%;
     width: 400px;
+    margin: auto;
 }
 
 dialog::backdrop {
@@ -479,6 +484,14 @@ body.dark-mode .leaderboard-list li {
 #login-form button:hover {
     background-color: var(--primary-light);
     color: var(--primary-color);
+}
+
+.login-hint {
+    padding: 10px 15px;
+    background-color: #fdb5b2;
+    border-radius: var(--border-radius);
+    font-size: 13.3px;
+    max-width: 300px;
 }
 
 /* Dark mode adjustments for login */

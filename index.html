@@ -6,6 +6,7 @@
     <meta name="description" content="Motion Metrics - Track your fitness journey">
     <title>Motion Metrics</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="/media/favicon.ico">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.10.7/dayjs.min.js"></script>
 </head>
 <body>
@@ -114,7 +115,7 @@
                     <input type="checkbox" id="activity-reminders-toggle">
                 </div>
             </div>
-            <button class="contact-us-button">Contact Us</button>
+            <a href="mailto:contact@motion.metrics"><button class="contact-us-button">Contact Us</button></a>
             <button class="log-out-button">Log Out</button>
         </section>
 
@@ -133,7 +134,7 @@
                 <input type="password" id="password" placeholder="Password" required>
                 <button type="submit">Login</button>
             </form>
-            <p class="login-hint" style="margin-top: 10px">Credentials are "example:password123" for testing!</p>
+            <p class="login-hint" style="margin-top: 10px">⚠ Use <strong>example</strong> and <strong>password123</strong> for demo.</p>
         </section>
     </main>
 
@@ -153,7 +154,7 @@
             </select>
             <input type="number" id="log-duration" placeholder="Duration (minutes)" required min="1">
             <div class="popup-buttons">
-                <button type="submit">Save Workout</button>
+                <button type="submit" class="save-workout">Save Workout</button>
                 <button type="button" class="close-popup">Close</button>
             </div>
         </form>
@@ -162,10 +163,12 @@
     <dialog id="edit-goal-popup">
         <h3>Edit Goal</h3>
         <form id="edit-goal-form">
-            <input type="text" id="goal-description-input" placeholder="Goal description" required>
-            <input type="number" id="goal-progress-input" placeholder="Progress (%)" required min="0" max="100">
+            <p>Goal:</p>
+            <input type="text" id="goal-description-input" placeholder="Goal Text" required>
+            <p>Progress:</p>
+            <input type="number" id="goal-progress-input" placeholder="Progress %" required min="0" max="100">
             <div class="popup-buttons">
-                <button type="submit">Save Goal</button>
+                <button type="submit" class="save-goal">Save Goal</button>
                 <button type="button" class="close-popup">Close</button>
             </div>
         </form>
