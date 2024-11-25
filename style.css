@@ -488,7 +488,7 @@ body.dark-mode .leaderboard-list li {
 
 .login-hint {
     padding: 10px 15px;
-    background-color: #fdb5b2;
+    background-color: var(--danger-color);
     border-radius: var(--border-radius);
     font-size: 13.3px;
     max-width: 300px;
