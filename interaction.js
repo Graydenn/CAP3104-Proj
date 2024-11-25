@@ -3,6 +3,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const navLinks = document.querySelectorAll('nav a, .leaderboard-link');
     const pages = document.querySelectorAll('.page');
 
+    function checkWeek(date)
+    {
+        const today = new Date();
+        const todayDate = today.getDate();
+        const todayDay = today.getDay();
+      
+        // get first date of week
+        const firstDayOfWeek = new Date(today.setDate(todayDate - todayDay));
+      
+        // get last date of week
+        const lastDayOfWeek = new Date(firstDayOfWeek);
+        lastDayOfWeek.setDate(lastDayOfWeek.getDate() + 6);
+      
+        // if date is equal or within the first and last dates of the week
+        return date >= firstDayOfWeek && date <= lastDayOfWeek;
+        
+    }
+
+    function checkMonth(date)
+    {
+        const today = new Date();
+        const todayMonth = today.getMonth();
+        const dateMonth= date.getMonth();
+
+        return (dateMonth ===todayMonth);
+    }
+
     class User {
         constructor(name, weekly, monthly, allTime) {
             this.name = name;
@@ -38,12 +65,20 @@ document.addEventListener('DOMContentLoaded', () => {
         set setAllTime(newAllTime){
             this.allTime= newAllTime;
         }
-        workoutLogged(time) {
-            time = parseInt(time, 10);
-            this.weekly = (parseInt(this.weekly, 10) || 0) + time;
-            this.monthly = (parseInt(this.monthly, 10) || 0) + time;
+        workoutLogged(date, time) {
+            time  = parseInt(time, 10);
+
+            if(checkWeek(date))
+            {
+                this.weekly = (parseInt(this.weekly, 10) || 0) + time;
+            }
+            if (checkMonth(date))
+            {
+                this.monthly = (parseInt(this.monthly, 10) || 0) + time;
+            }
             this.allTime = (parseInt(this.allTime, 10) || 0) + time;
         }
+
     }
 
     let users = loadUsers(); // Load users from local storage
@@ -146,8 +181,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const activity = document.getElementById('log-activity').value;
             const duration = document.getElementById('log-duration').value;
 
+            const dateFormatted= new Date(date);
             addWorkoutEntry(date, activity, duration);
-            currUser.workoutLogged(duration);
+            currUser.workoutLogged(dateFormatted, duration);
 
             saveUsers();
 
@@ -183,6 +219,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const workoutId = editWorkoutForm.dataset.workoutId;
 
             updateWorkoutEntry(workoutId, date, activity, duration);
+
+
             editWorkoutPopup.close();
         });
     }
@@ -287,6 +325,8 @@ document.addEventListener('DOMContentLoaded', () => {
             editWorkoutPopup.showModal();
         }
     }
+
+    
 
     function updateGoal(description, progress) {
         const goalDescription = document.getElementById('goal-description');
